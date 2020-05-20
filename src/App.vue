@@ -1,17 +1,25 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div>你好</div>
+    <button @click="test"> test</button>
   </div>
 </template>
 
 <script>
 import HelloWorld from './components/HelloWorld.vue'
-
+import xlsx from "./xlsx/download.js"
 export default {
   name: 'App',
   components: {
     HelloWorld
+  },
+  methods:{
+    test(){
+      console.debug("test");
+      console.debug("test", typeof require !== 'undefined');
+      xlsx.download()
+    }
   }
 }
 </script>
