@@ -1,23 +1,45 @@
 
-// if (typeof require !== 'undefined') XLSX = require('xlsx');
-// if (typeof require !== 'undefined') XLSXStyle = require('xlsx-style');
 
 import XLSX from 'xlsx'
 import XLSXStyle from 'xlsx-style'
 import { saveAs } from 'file-saver'
 
-export function download() {
 
-    // var workbook = XLSX.readFile('test.xlsx');
-    // var first_sheet_name = workbook.SheetNames[0];
-    // var address_of_cell = 'A1';
-    // /* Get worksheet */
-    // var worksheet = workbook.Sheets[first_sheet_name];
-    // // /* Find desired cell */
-    // // var desired_cell = worksheet[address_of_cell];
-    // /* Get the value */
-    // // var desired_value = desired_cell.v;
+/**
+ * 
+ * @param {number} x 坐标, 从0开始
+ * @param {number} y 坐标, 从0开始
+ * @param {*} width 
+ */
+const getColorIndicesForCoord = (x, y, width) => {
+    const red = y * (width * 4) + x * 4;
+    return [red, red + 1, red + 2, red + 3];
+};
 
+/**
+ * 
+ * @param {number} x 坐标, 从0开始
+ * @param {number} y 坐标, 从0开始
+ * @param {*} width 
+ */
+const getRgba = function (x, y, imagedata) {
+    let indices = getColorIndicesForCoord(x, y, imagedata.width);
+    let data = imagedata.data;
+    return [data[indices[0]], data[indices[1]], data[indices[2]], data[indices[3]]]
+};
+
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+const rgbToHex = function (r, g, b) {
+    return componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+export function download(imageData) {
+    let imgWidth = imageData.width;
+    let imgHeight = imageData.height;
 
     var workbook = XLSX.utils.book_new();
     var worksheet = XLSX.utils.aoa_to_sheet([]);
@@ -25,45 +47,43 @@ export function download() {
     /* Add the worksheet to the workbook */
     XLSX.utils.book_append_sheet(workbook, worksheet, "sheet_name");
 
-
+    // 设置单元格宽度和高度
     const colWidth = 20;
-    var wscols = [
-        { wpx: colWidth },
-        { wpx: colWidth },
-        { wpx: colWidth },
-        { wpx: colWidth },
-        { wpx: colWidth },
-    ];
+    var wscols = [{ wpx: colWidth }];
+    for (let i = 0; i < imgWidth; i++) {
+        wscols.push(wscols[0]);
+    }
     worksheet['!cols'] = wscols;
 
-    const rowHeight = 20;
+    const rowHeight = colWidth;
     var wsrows = [
         { hpx: rowHeight },
-        { hpx: rowHeight },
-        { hpx: rowHeight },
-        { hpx: rowHeight },
-        { hpx: rowHeight },
     ];
+    for (let i = 0; i < imgHeight; i++) {
+        wsrows.push(wsrows[0]);
+    }
     worksheet['!rows '] = wsrows;
 
+    // 填充数据
+    let rowValues = new Array(imgWidth).fill("")
+    let table = new Array(imgHeight).fill(rowValues);
+    XLSX.utils.sheet_add_aoa(worksheet, table, { origin: "A1" });
 
-    // desired_cell.s = {fill:{fgColor: {rgb:"FF0000"}}};
-    // worksheet["A2"].s  = {fill:{bgColor: {rgb:"FF0000"}}};
-    for (let index = 1; index < 10; index++) {
-        let address = "A" + index;
-        let cell = worksheet[address];
-        if (!cell) {
-            // 新增一行
-            XLSX.utils.sheet_add_aoa(worksheet, [[" "]], { origin: address });
+    //设置单元格的背景颜色
+    //最后一行和最后一列是黑色像素, 所以imgHeight-1
+    for (let rowIndex = 0; rowIndex < imgHeight; rowIndex++) {
+        let y = rowIndex;
+        for (let colIndex = 0; colIndex < imgWidth; colIndex++) {
+            let x = colIndex;
+            var cellref = XLSX.utils.encode_cell({ c: colIndex, r: rowIndex });
+            let cell = worksheet[cellref];
+            let rgbArray = getRgba(x, y, imageData)
+            let rgb = rgbToHex(...rgbArray);
+            cell.s = { fill: { fgColor: { rgb: rgb } } };
+            // console.debug(`x,y = ${x},${y} `, cell);
         }
-        cell = worksheet[address];
-        cell.v = "";
-        // cell.w = " ";
-        cell.s = { fill: { fgColor: { rgb: "FF0000" } } };
     }
-
     var wopts = { bookType: 'xlsx', bookSST: false, type: 'binary' };
-
     var wbout = XLSXStyle.write(workbook, wopts);
     /* the saveAs call downloads a file on the local machine */
     saveAs(new Blob([s2ab(wbout)], { type: "" }), "out.xlsx")
@@ -77,7 +97,6 @@ function s2ab(s) {
     for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
     return buf;
 }
-
 
 export default {
     download
