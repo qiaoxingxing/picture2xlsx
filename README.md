@@ -11,6 +11,7 @@
 ![](index_files/c38a7635-09fd-48a5-9916-5eb837ec1d26.jpg)
 
 # 源码说明
+源码地址: [gitee](https://gitee.com/qiaoxingxing/picture2xlsx) [github](https://github.com/qiaoxingxing/picture2xlsx)
 ## 使用的工具
 - vue框架, vue-cli生成项目脚手架
 - [sheetjs](https://github.com/SheetJS/sheetjs) js操作excel
@@ -22,3 +23,4 @@ cd picture2xlsx
 npm install
 npm run serve 
 ```
+
