@@ -70,7 +70,6 @@ export function download(imageData) {
     XLSX.utils.sheet_add_aoa(worksheet, table, { origin: "A1" });
 
     //设置单元格的背景颜色
-    //最后一行和最后一列是黑色像素, 所以imgHeight-1
     for (let rowIndex = 0; rowIndex < imgHeight; rowIndex++) {
         let y = rowIndex;
         for (let colIndex = 0; colIndex < imgWidth; colIndex++) {
