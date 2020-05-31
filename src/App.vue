@@ -1,8 +1,8 @@
 <template>
   <div id="app">
-    <p>1. 选择图片(图片不会被上传到网络)</p>
+    <p>1. 选择图片</p>
     <img alt="image" src="./assets/upload.jpg" id="img" @click="uploadImage" />
-    <p>2.下载xlsx</p>
+    <p>2.下载XLSX</p>
     <img alt="image" src="./assets/downloadxls.jpg" id="download" @click="downloadXlsx" />
     <p></p>
     <!-- <button @click="test">test</button> -->
@@ -14,6 +14,17 @@
       @change="fileChange"
       style="display:none"
     />
+    <div id="comment">
+      <br />
+      <br />
+      <p>几点说明</p>
+
+      <ul>
+        <li>图片不会被上传到网络</li>
+        <li>转换后的xlsx大小限制在200*200以下</li>
+        <li>源码地址: <a href="https://gitee.com/qiaoxingxing/picture2xlsx">gitee</a> <a href="https://github.com/qiaoxingxing/picture2xlsx">github</a></li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -22,6 +33,10 @@ import xlsx from "./xlsx/download.js";
 
 export default {
   name: "App",
+  data() {
+    return {
+    };
+  },
   methods: {
     test() {},
     downloadXlsx() {
@@ -31,26 +46,28 @@ export default {
         spinner: "el-icon-loading",
         background: "rgba(0, 0, 0, 0.7)"
       });
-      try {
-        var img = document.getElementById("img");
-        var canvas = document.createElement("canvas");
-        let scale = this.getScale(img.width, img.height);
-        let width = img.width * scale;
-        let height = img.height * scale;
+      setTimeout(() => {
+        try {
+          var img = document.getElementById("img");
+          var canvas = document.createElement("canvas");
+          let scale = this.getScale(img.width, img.height);
+          let width = img.width * scale;
+          let height = img.height * scale;
 
-        canvas.width = width;
-        canvas.height = height;
-        var context = canvas.getContext("2d");
-        context.drawImage(img, 0, 0, width, height);
-        var imageData = context.getImageData(0, 0, width, height);
-        console.debug("imageData", imageData);
-        xlsx.download(imageData);
-      } catch (e) {
-        console.debug("error", e);
-        this.$message.error("出现错误");
-      } finally {
-        loading.close();
-      }
+          canvas.width = width;
+          canvas.height = height;
+          var context = canvas.getContext("2d");
+          context.drawImage(img, 0, 0, width, height);
+          var imageData = context.getImageData(0, 0, width, height);
+          console.debug("imageData", imageData);
+          xlsx.download(imageData);
+          loading.close();
+        } catch (e) {
+          loading.close();
+          console.debug("error", e);
+          this.$message.error("出现错误");
+        }
+      }, 100);
     },
     //获取缩放的比例
     getScale(width, height) {
@@ -100,12 +117,21 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  text-align: left;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 30px;
+  max-width: 250px;
+  max-height: 250px;
+  margin-left: auto;
+  margin-right: auto;
 }
 img {
   max-width: 200px;
   max-height: 200px;
+}
+#comment {
+  color: gray;
+  margin-left: auto;
+  margin-right: auto;
 }
 </style>
